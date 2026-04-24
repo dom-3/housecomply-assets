@@ -551,6 +551,8 @@ async function submitForm(){
 }
 
 function showSuccess(){
+  const _acct=new URLSearchParams(window.location.search).get('account_id')||'';
+  setTimeout(()=>{window.location.href='https://www.housecomply.co.uk/inspection/waiting?account_id='+_acct;},3000);
   const photoCount=Object.keys(cloudinaryStore).length;
   document.getElementById('pane-12').innerHTML=`<div style="text-align:center;padding:2.5rem 1rem;">
   <div style="width:64px;height:64px;background:var(--teal-bg);border:2px solid var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
