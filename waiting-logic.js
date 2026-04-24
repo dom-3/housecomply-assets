@@ -5,7 +5,7 @@
 // Version: V1
 // =============================================================
 
-const AIRTABLE_API_KEY  = "pat1Owjm5fBPDiHVG.91a2d7c86abd4fb0e6dd9cada61acdd67cf6bd2b7fab010de421f82c30a03b15";
+const AIRTABLE_API_KEY = window.HC_AIRTABLE_KEY || "";
 const AIRTABLE_BASE_ID  = "appRbC8gJAw2w5jeS";
 const INSPECTIONS_TABLE = "INSPECTIONS";
 const PROPERTIES_TABLE  = "PROPERTIES";
