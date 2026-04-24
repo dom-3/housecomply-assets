@@ -25,7 +25,7 @@ const IMPACT_TAGS=['safety risk','FFHH concern','energy inefficiency','structura
 const SEVERITIES=['Critical','High','Medium','Low','Advisory'];
 const SOURCE_TYPES=['Observed','Reported by tenant','Reported by agent','Documented','Not verified'];
 
-let cur=0,defectCount=0,gpsData=null;
+let cur=0,defectCount=0;
 const aiResults={};
 
 // =============================================================
@@ -55,27 +55,12 @@ const HC={
 window.addEventListener('DOMContentLoaded',()=>{init();});
 
 function init(){
-  captureGPS();
   checkDraft();
   renderStep(0);
   document.querySelectorAll('input,select,textarea').forEach(el=>{
     el.addEventListener('change',()=>{if(el.name)autoTick(el.name);saveDraft();});
     el.addEventListener('input',()=>saveDraft());
   });
-}
-
-// =============================================================
-// GPS
-// =============================================================
-function captureGPS(){
-  if(!navigator.geolocation)return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    gpsData={lat:pos.coords.latitude.toFixed(6),lng:pos.coords.longitude.toFixed(6),accuracy:Math.round(pos.coords.accuracy)+'m',ts:new Date().toISOString()};
-    const dot=document.getElementById('gps-dot'),txt=document.getElementById('gps-text'),card=document.getElementById('gps-card');
-    if(dot){dot.classList.remove('pulse');dot.classList.add('active');}
-    if(txt)txt.textContent='Location captured';
-    if(card){card.style.display='block';card.textContent=`${gpsData.lat}, ${gpsData.lng} (\u00b1${gpsData.accuracy})`;}
-  },()=>{const txt=document.getElementById('gps-text');if(txt)txt.textContent='GPS unavailable';},{timeout:15000,enableHighAccuracy:true});
 }
 
 // =============================================================
@@ -488,7 +473,7 @@ function buildReview(){
   document.getElementById('review-content').innerHTML=`
   <div class="review-section"><div class="review-sec-hd"><span class="review-sec-title">Property</span>${pill(g('tenure'))}</div>
   ${row('Address',g('address')+', '+g('postcode'))}${row('Property ID',g('property_id'))}${row('Inspector',g('inspector_name'))}
-  ${row('Date',g('inspection_date'))}${row('GPS',gpsData?`${gpsData.lat}, ${gpsData.lng}`:'Not captured')}
+  ${row('Date',g('inspection_date'))}
   ${row('Photos',photosUploaded+' uploaded')}</div>
   <div class="review-section"><div class="review-sec-hd"><span class="review-sec-title">Safety</span></div>
   ${row('Smoke Alarms',g('smoke_alarm_count'))}${row('CO Alarms',g('co_alarm_count'))}</div>
@@ -528,7 +513,7 @@ function getPayload(){
   const _token=_urlParams.get('token')||'';
 
   return{
-    _meta:{submitted_at:new Date().toISOString(),form_version:'HouseComply-V3-Wave4',pipeline_mode:g('pipeline_mode'),gps:gpsData,photos_count:inspection_photo_urls.length,account_id:_accountId,token:_token},
+    _meta:{submitted_at:new Date().toISOString(),form_version:'HouseComply-V3-Wave4',pipeline_mode:g('pipeline_mode'),photos_count:inspection_photo_urls.length,account_id:_accountId,token:_token},
     property:{property_id:g('property_id'),address:g('address'),city:g('city'),county:g('county'),postcode:g('postcode'),country:g('country'),property_type:g('property_type'),tenure:g('tenure'),num_tenants:g('num_tenants'),tenancy_start:g('tenancy_start'),occupied_at_inspection:g('occupied_at_inspection'),occupant_present:g('occupant_present'),listed_status:g('listed_status'),conservation_area:g('conservation_area')},
     inspector:{name:g('inspector_name'),email:g('inspector_email'),role:g('inspector_role'),inspection_date:g('inspection_date'),inspection_time:g('inspection_time'),inspection_type:g('inspection_type')},
     compliance_context:g('compliance_context'),
