@@ -286,10 +286,12 @@
     const submitBar=el("div",{class:"submit-bar"});
     submitBar.innerHTML=`
       <div class="submit-hint">All required items must be completed. Your answers will be re-validated and you'll be redirected to the waiting screen.</div>
-      <button type="button" id="submit-btn" class="btn-primary"><span id="submit-label">Submit clarification</span></button>
+     <button type="button" id="submit-btn" class="btn-primary"><span id="submit-label">Submit clarification</span></button>
+      <button type="button" id="force-btn" class="btn-force">Generate report with current information</button>
     `;
     root.appendChild(submitBar);
     $("#submit-btn").addEventListener("click",handleSubmit);
+    $("#force-btn").addEventListener("click",handleForceReport);
   }
 
   function buildSection({variant,badge,title,subtitle,items,required,alwaysPhoto,keyPrefix}) {
