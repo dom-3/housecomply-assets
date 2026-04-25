@@ -22,7 +22,9 @@ const EXTENDED_ERROR_MS = 90000;
 const TERMINAL_ROUTES = {
   "Passed":                       SUCCESS_PAGE_URL,
   "Partial — awaiting inspector": CLARIFY_PAGE_URL,
+  "Partial - awaiting inspector": CLARIFY_PAGE_URL,
   "Blocked — awaiting inspector": CLARIFY_PAGE_URL,
+  "Blocked - awaiting inspector": CLARIFY_PAGE_URL,
   "Failed after max attempts":    ESCALATED_PAGE_URL,
   "Escalated to manual review":   ESCALATED_PAGE_URL
 };
