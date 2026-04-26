@@ -2,8 +2,13 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V4 — Lookup field filter uses {field}&"" string coercion,
-//                sort param removed (see waiting-logic.js V4 for rationale).
+// Version: V5 — Adds handleForceReport for "Generate report with current
+//                information" button. Sends to MAIN inspection webhook
+//                (Route 1, force_report=true) with nested inspector and
+//                property objects per blueprint requirements.
+//                Also adds Inspector Email to loadInspection.
+//                V4 changes preserved: Lookup field filter uses {field}&""
+//                string coercion, sort param removed.
 // =============================================================
 
 (function() {
@@ -17,7 +22,10 @@
     AIRTABLE_PROPERTIES_TBL:  "tblV6jXR4YKX3ZkXg",
     CLOUDINARY_CLOUD_NAME:    "dqf21bf9r",
     CLOUDINARY_UPLOAD_PRESET: "inspection_photos",
+    // Regular clarify resubmission webhook (Route 2 — clarify resubmission)
     MAKE_WEBHOOK_URL:         "https://hook.eu1.make.com/bmelb5yz6qyy2df1n97751v4tcdbf95t",
+    // Main inspection scenario webhook (Route 1 — force_report=true)
+    INSPECTION_WEBHOOK_URL:   "https://hook.eu1.make.com/8j58i0pjxbyhr9dxqoz3fszi4rt5tq6k",
     WAITING_PAGE_URL:         "https://www.housecomply.co.uk/inspection/waiting",
     ESCALATED_PAGE_URL:       "https://www.housecomply.co.uk/inspection/escalated",
     MAX_ATTEMPTS:             5,
@@ -174,6 +182,7 @@
       pendingFollowups:     parseArrayField(f["Pending Follow-up Questions"]),
       propertyIds:          f["Linked Property"]||f["Property"]||[],
       inspectorName:        f["Inspector Name"]||"",
+      inspectorEmail:       f["Inspector Email"]||"",   // V5: needed for handleForceReport payload
       inspectionDate:       f["Inspection Date"]||null
     };
     state.attempts=state.record.attemptCount||1;
@@ -389,7 +398,7 @@
   }
 
   // =============================================================
-  // SUBMIT
+  // SUBMIT (regular clarify resubmission — Route 2 in main scenario)
   // =============================================================
   async function handleSubmit() {
     const missingSlots=[];
@@ -446,6 +455,89 @@
         $(".submit-bar")?.prepend(errNode);
       }
       errNode.textContent="Submission failed. Please check your connection and try again.";
+    }
+  }
+
+  // =============================================================
+  // FORCE REPORT (Route 1 in main scenario — bypasses re-validation)
+  // V5: implements the previously-undefined handleForceReport function.
+  // Sends to MAIN inspection webhook with force_report=true. Per blueprint:
+  //   - Module 70 needs: inspection_id
+  //   - Module 73 needs: inspection_id
+  //   - Module 74 (Resend email) needs: inspector.email, property.address
+  //     (nested objects, not flat fields)
+  // =============================================================
+  async function handleForceReport() {
+    const propertyAddress = [state.property.address, state.property.city, state.property.postcode]
+      .filter(Boolean).join(", ");
+
+    const confirmMsg =
+      "Generate the report using the information already submitted?\n\n" +
+      "This will skip the remaining clarification questions and produce a final report. " +
+      "Any unresolved items will be flagged as UNCONFIRMED in the report.\n\n" +
+      "This action cannot be undone.";
+    if (!window.confirm(confirmMsg)) return;
+
+    if (!state.record.inspectorEmail) {
+      console.warn("Inspector Email is missing on this inspection — the report email may not deliver.");
+    }
+
+    const payload = {
+      force_report: true,                            // Route 1 trigger
+      inspection_id: state.inspectionId,
+      account_id: state.accountId || null,
+      token: state.token || null,
+      submitted_at: new Date().toISOString(),
+      // Nested objects required by Module 74 (Resend email)
+      inspector: {
+        name: state.record.inspectorName || "",
+        email: state.record.inspectorEmail || ""
+      },
+      property: {
+        address: propertyAddress || "",
+        city: state.property.city || "",
+        postcode: state.property.postcode || ""
+      }
+    };
+
+    const btn = $("#force-btn");
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" aria-hidden="true"></span> Generating report…`;
+
+    // Also disable the submit button so the user can't double-fire
+    const submitBtn = $("#submit-btn");
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const res = await fetch(CFG.INSPECTION_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`Webhook ${res.status}`);
+
+      // Redirect to waiting page — it will poll Airtable and forward
+      // to /inspection/complete once Module 73 sets the terminal status
+      const wait = new URL(CFG.WAITING_PAGE_URL);
+      if (state.inspectionId) wait.searchParams.set("inspection_id", state.inspectionId);
+      if (state.accountId)    wait.searchParams.set("account_id", state.accountId);
+      if (state.token)        wait.searchParams.set("token", state.token);
+      window.location.href = wait.toString();
+    } catch (err) {
+      console.error("Force report failed:", err);
+      btn.disabled = false;
+      btn.textContent = originalText;
+      if (submitBtn) submitBtn.disabled = false;
+      let errNode = $("#submit-error");
+      if (!errNode) {
+        errNode = el("div", {
+          id: "submit-error",
+          style: "width:100%;padding:12px 14px;background:var(--sev-critical-bg);border:1px solid var(--sev-critical-tint);border-radius:var(--r);color:var(--sev-critical);font-size:14px;font-weight:500;"
+        });
+        $(".submit-bar")?.prepend(errNode);
+      }
+      errNode.textContent = "Couldn't generate the report. Please check your connection and try again.";
     }
   }
 
