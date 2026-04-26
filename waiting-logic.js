@@ -2,8 +2,10 @@
 // HouseComply — Waiting Page Logic
 // Hosted on GitHub. Loaded by waiting-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V3 — API key now read from window.HC_AIRTABLE_KEY (set in GHL shell)
-//                rather than hardcoded. Key must NOT live in this file.
+// Version: V4 — Lookup field filter uses {field}&"" string coercion instead
+//                of ARRAYJOIN(). Removed sort param (single-result query
+//                doesn't need it, and a missing sort field silently returns
+//                empty results on the Airtable API).
 // =============================================================
 
 const AIRTABLE_API_KEY  = window.HC_AIRTABLE_KEY || "";
@@ -125,13 +127,16 @@ async function init() {
 
 // =============================================================
 // FIND LATEST INSPECTION BY ACCOUNT ID
-// FIX V2: filters by {Account Record ID} lookup field (returns the rec ID
-// of the linked ACCOUNTS row), not {Linked Account} which ARRAYJOIN-s to
-// the primary field display value (e.g. "Dominic Pullen") and never matches.
+// V4 fix: {Account Record ID}&"" coerces the Lookup field to a string
+// (Airtable's filterByFormula treats Lookup fields as multipleLookupValues
+// arrays and ARRAYJOIN behaviour with that type is inconsistent — &""
+// is the documented coercion pattern).
+// Sort param removed because we only need one record per account, and a
+// stale/missing sort field name silently returns [] from the API.
 // =============================================================
 async function findLatestInspection(accountId) {
-  const formula = encodeURIComponent(`FIND("${accountId}",ARRAYJOIN({Account Record ID}))`);
-  const url = `${AIRTABLE_API_ROOT}/${AIRTABLE_BASE_ID}/${encodeURIComponent(INSPECTIONS_TABLE)}?filterByFormula=${formula}&sort[0][field]=Submitted At&sort[0][direction]=desc&maxRecords=1`;
+  const formula = encodeURIComponent(`FIND("${accountId}",{Account Record ID}&"")`);
+  const url = `${AIRTABLE_API_ROOT}/${AIRTABLE_BASE_ID}/${encodeURIComponent(INSPECTIONS_TABLE)}?filterByFormula=${formula}&maxRecords=1`;
   const res = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
