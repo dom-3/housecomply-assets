@@ -1,7 +1,7 @@
 // =============================================================
 // HouseComply — Complete Page Logic
 // Hosted on GitHub. Loaded by complete-shell.html in GHL.
-// Version: V1
+// Version: V2 — fixed Linked Account filter to use Account Record ID lookup field
 // =============================================================
 
 const AIRTABLE_API_KEY  = window.HC_AIRTABLE_KEY || "";
@@ -71,10 +71,13 @@ async function init() {
 
 // =============================================================
 // FIND LATEST INSPECTION BY ACCOUNT ID
+// FIX V2: filters by {Account Record ID} lookup field (returns the rec ID
+// of the linked ACCOUNTS row), not {Linked Account} which ARRAYJOIN-s to
+// the primary field display value (e.g. "Dominic Pullen") and never matches.
 // =============================================================
 async function findLatestInspection(accountId) {
   try {
-    const formula = encodeURIComponent(`FIND("${accountId}",ARRAYJOIN({Linked Account}))`);
+    const formula = encodeURIComponent(`FIND("${accountId}",ARRAYJOIN({Account Record ID}))`);
     const url = `${AIRTABLE_API_ROOT}/${AIRTABLE_BASE_ID}/${encodeURIComponent(INSPECTIONS_TABLE)}?filterByFormula=${formula}&sort[0][field]=Submitted At&sort[0][direction]=desc&maxRecords=1`;
     const res = await fetch(url, { headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` } });
     if (!res.ok) return null;
