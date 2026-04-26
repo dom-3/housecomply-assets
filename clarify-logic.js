@@ -2,7 +2,8 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V2 — fixed Linked Account filter to use Account Record ID lookup field
+// Version: V4 — Lookup field filter uses {field}&"" string coercion,
+//                sort param removed (see waiting-logic.js V4 for rationale).
 // =============================================================
 
 (function() {
@@ -460,12 +461,11 @@
     state.accountId=getParam("account_id");
 
     // Find inspection by account_id if no inspection_id
-    // FIX V2: filters by {Account Record ID} lookup field, not {Linked Account}
-    // which ARRAYJOIN-s to the primary field display value and never matches.
+    // V4 fix: {field}&"" string coercion + sort param removed
     if(!state.inspectionId&&state.accountId){
       try{
-        const formula=encodeURIComponent(`FIND("${state.accountId}",ARRAYJOIN({Account Record ID}))`);
-        const url=`${AT_BASE}/${CFG.AIRTABLE_INSPECTIONS_TBL}?filterByFormula=${formula}&sort[0][field]=Submitted At&sort[0][direction]=desc&maxRecords=1`;
+        const formula=encodeURIComponent(`FIND("${state.accountId}",{Account Record ID}&"")`);
+        const url=`${AT_BASE}/${CFG.AIRTABLE_INSPECTIONS_TBL}?filterByFormula=${formula}&maxRecords=1`;
         const res=await fetch(url,{headers:{"Authorization":`Bearer ${CFG.AIRTABLE_API_KEY}`}});
         if(res.ok){
           const data=await res.json();
