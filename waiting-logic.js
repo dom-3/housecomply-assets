@@ -2,10 +2,11 @@
 // HouseComply — Waiting Page Logic
 // Hosted on GitHub. Loaded by waiting-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V2 — fixed Linked Account filter to use Account Record ID lookup field
+// Version: V3 — API key now read from window.HC_AIRTABLE_KEY (set in GHL shell)
+//                rather than hardcoded. Key must NOT live in this file.
 // =============================================================
 
-const AIRTABLE_API_KEY  = "pat1Owjm5fBPDiHVG.91a2d7c86abd4fb0e6dd9cada61acdd67cf6bd2b7fab010de421f82c30a03b15";
+const AIRTABLE_API_KEY  = window.HC_AIRTABLE_KEY || "";
 const AIRTABLE_BASE_ID  = "appRbC8gJAw2w5jeS";
 const INSPECTIONS_TABLE = "INSPECTIONS";
 const PROPERTIES_TABLE  = "PROPERTIES";
@@ -59,6 +60,16 @@ document.addEventListener('DOMContentLoaded', init);
 // INIT — reads account_id OR inspection_id from URL
 // =============================================================
 async function init() {
+  // Hard-fail early if the GHL shell didn't set the API key
+  if (!AIRTABLE_API_KEY) {
+    showErrorScreen(
+      "Page not configured.",
+      "The Airtable API key is missing. Please contact support.",
+      "window.HC_AIRTABLE_KEY is not set in the GHL shell page."
+    );
+    return;
+  }
+
   const params = new URLSearchParams(window.location.search);
   inspectionId = params.get('inspection_id');
   token        = params.get('token');
