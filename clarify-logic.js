@@ -2,15 +2,15 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V7 — Fix webhook payload format. Module 1 webhook exposes only
-//                a single 'value' field (type:text). Module 16 reads
-//                {{1.value}} and JSON-parses it. Inspect form already does
-//                this: Content-Type: text/plain, mode: no-cors, body is
-//                the stringified payload. Now matched here for both
-//                handleSubmit and handleForceReport.
-//                NOTE: no-cors makes response opaque — cannot read res.ok
-//                or status. We mirror inspect form pattern: assume success
-//                unless fetch() itself throws.
+// Version: V8 — Webhook payload now wrapped as {value: "<stringified-json>"}
+//                so Module 1's webhook captures it as a single `value` text
+//                field matching the existing Module 16 schema. Module 16
+//                parses {{1.value}} into structured fields ({{16.X}}) which
+//                132 unique field references downstream depend on.
+//                After deploy: must "Redetermine data structure" on Module 1
+//                webhook in Make, then submit a V8 payload, so the webhook
+//                schema captures `value` as a text field again.
+//                V7 changes preserved: text/plain + no-cors fetch.
 //                V6 changes preserved: unified webhook routing.
 //                V5 changes preserved: handleForceReport, Inspector Email.
 //                V4 changes preserved: {field}&"" string coercion, no sort.
@@ -138,23 +138,26 @@
   }
 
   // =============================================================
-  // WEBHOOK FETCH (V7)
-  // Matches inspect form submission pattern:
-  //   - Content-Type: text/plain
-  //   - mode: no-cors
-  //   - body: the stringified payload (becomes Module 1's `value` field)
-  // Resolves on network success. Throws if fetch() itself fails. Cannot
-  // detect HTTP-level errors due to opaque response — that's the trade-off
-  // for matching the working pattern.
+  // WEBHOOK FETCH (V8)
+  // V7 sent the payload directly (text/plain). Make's webhook auto-parsed
+  // the JSON into separate fields, leaving Module 16 with no `value` field
+  // to JSON-parse. Result: "missing value of required parameter 'json'".
+  // V8 wraps the payload in {value: "<stringified-json>"} so the webhook
+  // captures it as a single text field. Module 16 then parses {{1.value}}
+  // back into the structured fields {{16.X}} that 132 unique field
+  // references downstream depend on.
+  // After this deploys, Make needs "Redetermine data structure" on Module 1
+  // followed by one V8 submission so the webhook schema picks up `value`.
   // =============================================================
   async function postToWebhook(url, payload) {
-    const bodyStr = JSON.stringify(payload);
-    console.log("[HouseComply] Webhook submit | Size:", Math.round(bodyStr.length/1024) + "KB");
+    const innerJson = JSON.stringify(payload);
+    const wrappedBody = JSON.stringify({ value: innerJson });
+    console.log("[HouseComply] Webhook submit | Inner size:", Math.round(innerJson.length/1024) + "KB");
     await fetch(url, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
-      body: bodyStr
+      body: wrappedBody
     });
   }
 
@@ -426,8 +429,7 @@
 
   // =============================================================
   // SUBMIT (regular clarify resubmission — Route 2 in main scenario)
-  // V7: uses postToWebhook helper (text/plain + no-cors) so Module 16
-  // can correctly parse {{1.value}} into structured fields.
+  // V8: payload wrapped in {value: "<stringified>"} via postToWebhook
   // =============================================================
   async function handleSubmit() {
     const missingSlots=[];
@@ -488,12 +490,7 @@
 
   // =============================================================
   // FORCE REPORT (Route 1 in main scenario — bypasses re-validation)
-  // V7: uses postToWebhook helper (text/plain + no-cors).
-  // Per blueprint:
-  //   - Module 70 needs: inspection_id
-  //   - Module 73 needs: inspection_id
-  //   - Module 74 (Resend email) needs: inspector.email, property.address
-  //     (nested objects, not flat fields)
+  // V8: payload wrapped in {value: "<stringified>"} via postToWebhook
   // =============================================================
   async function handleForceReport() {
     const propertyAddress = [state.property.address, state.property.city, state.property.postcode]
