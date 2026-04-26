@@ -2,7 +2,7 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V1
+// Version: V2 — fixed Linked Account filter to use Account Record ID lookup field
 // =============================================================
 
 (function() {
@@ -460,9 +460,11 @@
     state.accountId=getParam("account_id");
 
     // Find inspection by account_id if no inspection_id
+    // FIX V2: filters by {Account Record ID} lookup field, not {Linked Account}
+    // which ARRAYJOIN-s to the primary field display value and never matches.
     if(!state.inspectionId&&state.accountId){
       try{
-        const formula=encodeURIComponent(`FIND("${state.accountId}",ARRAYJOIN({Linked Account}))`);
+        const formula=encodeURIComponent(`FIND("${state.accountId}",ARRAYJOIN({Account Record ID}))`);
         const url=`${AT_BASE}/${CFG.AIRTABLE_INSPECTIONS_TBL}?filterByFormula=${formula}&sort[0][field]=Submitted At&sort[0][direction]=desc&maxRecords=1`;
         const res=await fetch(url,{headers:{"Authorization":`Bearer ${CFG.AIRTABLE_API_KEY}`}});
         if(res.ok){
