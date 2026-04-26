@@ -2,17 +2,18 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V6 — Unified webhook routing. MAKE_WEBHOOK_URL now points to
-//                the MAIN inspection scenario (same as INSPECTION_WEBHOOK_URL),
-//                so clarify resubmissions hit Route 2 (Clarify Resubmission)
-//                instead of the old dead-end webhook. Route 2 modules:
-//                  80 = Airtable Get original inspection
-//                  81 = Claude re-validation
-//                  82 = JSON Parse Claude response
-//                  83 = Airtable Update with new validation status
-//                  84 = Router (PASSED → 90-93 PDF+email, NOT PASSED → 85 new token)
-//                V5 changes preserved: handleForceReport, Inspector Email
-//                V4 changes preserved: {field}&"" string coercion, no sort param
+// Version: V7 — Fix webhook payload format. Module 1 webhook exposes only
+//                a single 'value' field (type:text). Module 16 reads
+//                {{1.value}} and JSON-parses it. Inspect form already does
+//                this: Content-Type: text/plain, mode: no-cors, body is
+//                the stringified payload. Now matched here for both
+//                handleSubmit and handleForceReport.
+//                NOTE: no-cors makes response opaque — cannot read res.ok
+//                or status. We mirror inspect form pattern: assume success
+//                unless fetch() itself throws.
+//                V6 changes preserved: unified webhook routing.
+//                V5 changes preserved: handleForceReport, Inspector Email.
+//                V4 changes preserved: {field}&"" string coercion, no sort.
 // =============================================================
 
 (function() {
@@ -133,6 +134,27 @@
     return PHOTO_KEYWORDS.some(kw=>{
       const re=new RegExp("\\b"+kw.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i");
       return re.test(lower);
+    });
+  }
+
+  // =============================================================
+  // WEBHOOK FETCH (V7)
+  // Matches inspect form submission pattern:
+  //   - Content-Type: text/plain
+  //   - mode: no-cors
+  //   - body: the stringified payload (becomes Module 1's `value` field)
+  // Resolves on network success. Throws if fetch() itself fails. Cannot
+  // detect HTTP-level errors due to opaque response — that's the trade-off
+  // for matching the working pattern.
+  // =============================================================
+  async function postToWebhook(url, payload) {
+    const bodyStr = JSON.stringify(payload);
+    console.log("[HouseComply] Webhook submit | Size:", Math.round(bodyStr.length/1024) + "KB");
+    await fetch(url, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: bodyStr
     });
   }
 
@@ -404,8 +426,8 @@
 
   // =============================================================
   // SUBMIT (regular clarify resubmission — Route 2 in main scenario)
-  // V6: now posts to MAIN inspection webhook. Route 2 filter
-  // ({{16.inspection_id}} exists, no force_report) picks it up.
+  // V7: uses postToWebhook helper (text/plain + no-cors) so Module 16
+  // can correctly parse {{1.value}} into structured fields.
   // =============================================================
   async function handleSubmit() {
     const missingSlots=[];
@@ -445,8 +467,7 @@
     lbl.innerHTML=`<span class="spinner" aria-hidden="true"></span> Submitting…`;
 
     try{
-      const res=await fetch(CFG.MAKE_WEBHOOK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-      if(!res.ok)throw new Error(`Webhook ${res.status}`);
+      await postToWebhook(CFG.MAKE_WEBHOOK_URL, payload);
       const wait=new URL(CFG.WAITING_PAGE_URL);
       if(state.inspectionId)wait.searchParams.set("inspection_id",state.inspectionId);
       if(state.token)wait.searchParams.set("token",state.token);
@@ -467,8 +488,8 @@
 
   // =============================================================
   // FORCE REPORT (Route 1 in main scenario — bypasses re-validation)
-  // V5: implements the previously-undefined handleForceReport function.
-  // Sends to MAIN inspection webhook with force_report=true. Per blueprint:
+  // V7: uses postToWebhook helper (text/plain + no-cors).
+  // Per blueprint:
   //   - Module 70 needs: inspection_id
   //   - Module 73 needs: inspection_id
   //   - Module 74 (Resend email) needs: inspector.email, property.address
@@ -517,12 +538,7 @@
     if (submitBtn) submitBtn.disabled = true;
 
     try {
-      const res = await fetch(CFG.INSPECTION_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error(`Webhook ${res.status}`);
+      await postToWebhook(CFG.INSPECTION_WEBHOOK_URL, payload);
 
       // Redirect to waiting page — it will poll Airtable and forward
       // to /inspection/complete once Module 73 sets the terminal status
