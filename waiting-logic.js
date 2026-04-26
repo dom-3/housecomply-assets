@@ -2,10 +2,10 @@
 // HouseComply — Waiting Page Logic
 // Hosted on GitHub. Loaded by waiting-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V1
+// Version: V2 — fixed Linked Account filter to use Account Record ID lookup field
 // =============================================================
 
-const AIRTABLE_API_KEY = window.HC_AIRTABLE_KEY || "";
+const AIRTABLE_API_KEY  = "pat1Owjm5fBPDiHVG.91a2d7c86abd4fb0e6dd9cada61acdd67cf6bd2b7fab010de421f82c30a03b15";
 const AIRTABLE_BASE_ID  = "appRbC8gJAw2w5jeS";
 const INSPECTIONS_TABLE = "INSPECTIONS";
 const PROPERTIES_TABLE  = "PROPERTIES";
@@ -22,9 +22,7 @@ const EXTENDED_ERROR_MS = 90000;
 const TERMINAL_ROUTES = {
   "Passed":                       SUCCESS_PAGE_URL,
   "Partial — awaiting inspector": CLARIFY_PAGE_URL,
-  "Partial - awaiting inspector": CLARIFY_PAGE_URL,
   "Blocked — awaiting inspector": CLARIFY_PAGE_URL,
-  "Blocked - awaiting inspector": CLARIFY_PAGE_URL,
   "Failed after max attempts":    ESCALATED_PAGE_URL,
   "Escalated to manual review":   ESCALATED_PAGE_URL
 };
@@ -116,9 +114,12 @@ async function init() {
 
 // =============================================================
 // FIND LATEST INSPECTION BY ACCOUNT ID
+// FIX V2: filters by {Account Record ID} lookup field (returns the rec ID
+// of the linked ACCOUNTS row), not {Linked Account} which ARRAYJOIN-s to
+// the primary field display value (e.g. "Dominic Pullen") and never matches.
 // =============================================================
 async function findLatestInspection(accountId) {
-  const formula = encodeURIComponent(`FIND("${accountId}",ARRAYJOIN({Linked Account}))`);
+  const formula = encodeURIComponent(`FIND("${accountId}",ARRAYJOIN({Account Record ID}))`);
   const url = `${AIRTABLE_API_ROOT}/${AIRTABLE_BASE_ID}/${encodeURIComponent(INSPECTIONS_TABLE)}?filterByFormula=${formula}&sort[0][field]=Submitted At&sort[0][direction]=desc&maxRecords=1`;
   const res = await fetch(url, {
     headers: {
