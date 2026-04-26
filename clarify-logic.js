@@ -2,14 +2,13 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V8 — Webhook payload now wrapped as {value: "<stringified-json>"}
-//                so Module 1's webhook captures it as a single `value` text
-//                field matching the existing Module 16 schema. Module 16
-//                parses {{1.value}} into structured fields ({{16.X}}) which
-//                132 unique field references downstream depend on.
-//                After deploy: must "Redetermine data structure" on Module 1
-//                webhook in Make, then submit a V8 payload, so the webhook
-//                schema captures `value` as a text field again.
+// Version: V9 — Drops V8's {value: "<stringified>"} wrap because the
+//                Make scenario was rewired: Module 16 (JSON Parse) was
+//                deleted and all 278 downstream {{16.X}} references were
+//                rewired to {{1.X}}. Module 1's webhook now auto-parses
+//                the JSON body and exposes fields (force_report,
+//                inspection_id, inspector, property, etc.) directly.
+//                Sends the payload as the request body directly.
 //                V7 changes preserved: text/plain + no-cors fetch.
 //                V6 changes preserved: unified webhook routing.
 //                V5 changes preserved: handleForceReport, Inspector Email.
@@ -28,7 +27,7 @@
     CLOUDINARY_CLOUD_NAME:    "dqf21bf9r",
     CLOUDINARY_UPLOAD_PRESET: "inspection_photos",
     // V6: unified — clarify resubmission goes to main inspection webhook
-    // (Route 2 in main scenario picks it up via {{16.inspection_id}} exists filter)
+    // (Route 2 in main scenario picks it up via {{1.inspection_id}} exists filter)
     MAKE_WEBHOOK_URL:         "https://hook.eu1.make.com/8j58i0pjxbyhr9dxqoz3fszi4rt5tq6k",
     // Force-report goes to same webhook (Route 1, force_report=true filter)
     INSPECTION_WEBHOOK_URL:   "https://hook.eu1.make.com/8j58i0pjxbyhr9dxqoz3fszi4rt5tq6k",
@@ -138,26 +137,25 @@
   }
 
   // =============================================================
-  // WEBHOOK FETCH (V8)
-  // V7 sent the payload directly (text/plain). Make's webhook auto-parsed
-  // the JSON into separate fields, leaving Module 16 with no `value` field
-  // to JSON-parse. Result: "missing value of required parameter 'json'".
-  // V8 wraps the payload in {value: "<stringified-json>"} so the webhook
-  // captures it as a single text field. Module 16 then parses {{1.value}}
-  // back into the structured fields {{16.X}} that 132 unique field
-  // references downstream depend on.
-  // After this deploys, Make needs "Redetermine data structure" on Module 1
-  // followed by one V8 submission so the webhook schema picks up `value`.
+  // WEBHOOK FETCH (V9)
+  // V8 wrapped the body in {value: stringified} so old Module 16 could
+  // JSON-parse it. Now Module 16 has been deleted — Module 1's webhook
+  // auto-parses our JSON body and exposes fields directly. So we send
+  // the payload as the body (no wrapping).
+  //
+  // We still match the inspect form pattern (text/plain + no-cors) because
+  // application/json triggers a CORS preflight that Make's webhook doesn't
+  // respond to cleanly. text/plain is "simple request" so no preflight.
+  // Make's webhook detects JSON content despite the text/plain header.
   // =============================================================
   async function postToWebhook(url, payload) {
-    const innerJson = JSON.stringify(payload);
-    const wrappedBody = JSON.stringify({ value: innerJson });
-    console.log("[HouseComply] Webhook submit | Inner size:", Math.round(innerJson.length/1024) + "KB");
+    const bodyStr = JSON.stringify(payload);
+    console.log("[HouseComply] Webhook submit | Size:", Math.round(bodyStr.length/1024) + "KB");
     await fetch(url, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
-      body: wrappedBody
+      body: bodyStr
     });
   }
 
@@ -429,7 +427,8 @@
 
   // =============================================================
   // SUBMIT (regular clarify resubmission — Route 2 in main scenario)
-  // V8: payload wrapped in {value: "<stringified>"} via postToWebhook
+  // V9: payload sent directly. Module 1's webhook auto-parses and exposes
+  // fields as {{1.X}} (Module 16 was deleted in the rewire).
   // =============================================================
   async function handleSubmit() {
     const missingSlots=[];
@@ -490,7 +489,8 @@
 
   // =============================================================
   // FORCE REPORT (Route 1 in main scenario — bypasses re-validation)
-  // V8: payload wrapped in {value: "<stringified>"} via postToWebhook
+  // V9: payload sent directly. Module 1's webhook auto-parses and exposes
+  // fields as {{1.X}} for use by the rewired Route 1 modules.
   // =============================================================
   async function handleForceReport() {
     const propertyAddress = [state.property.address, state.property.city, state.property.postcode]
