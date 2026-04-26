@@ -2,13 +2,17 @@
 // HouseComply — Clarify Page Logic
 // Hosted on GitHub. Loaded by clarify-shell.html in GHL.
 // Edit this file in GitHub browser editor (has full search).
-// Version: V5 — Adds handleForceReport for "Generate report with current
-//                information" button. Sends to MAIN inspection webhook
-//                (Route 1, force_report=true) with nested inspector and
-//                property objects per blueprint requirements.
-//                Also adds Inspector Email to loadInspection.
-//                V4 changes preserved: Lookup field filter uses {field}&""
-//                string coercion, sort param removed.
+// Version: V6 — Unified webhook routing. MAKE_WEBHOOK_URL now points to
+//                the MAIN inspection scenario (same as INSPECTION_WEBHOOK_URL),
+//                so clarify resubmissions hit Route 2 (Clarify Resubmission)
+//                instead of the old dead-end webhook. Route 2 modules:
+//                  80 = Airtable Get original inspection
+//                  81 = Claude re-validation
+//                  82 = JSON Parse Claude response
+//                  83 = Airtable Update with new validation status
+//                  84 = Router (PASSED → 90-93 PDF+email, NOT PASSED → 85 new token)
+//                V5 changes preserved: handleForceReport, Inspector Email
+//                V4 changes preserved: {field}&"" string coercion, no sort param
 // =============================================================
 
 (function() {
@@ -22,9 +26,10 @@
     AIRTABLE_PROPERTIES_TBL:  "tblV6jXR4YKX3ZkXg",
     CLOUDINARY_CLOUD_NAME:    "dqf21bf9r",
     CLOUDINARY_UPLOAD_PRESET: "inspection_photos",
-    // Regular clarify resubmission webhook (Route 2 — clarify resubmission)
-    MAKE_WEBHOOK_URL:         "https://hook.eu1.make.com/bmelb5yz6qyy2df1n97751v4tcdbf95t",
-    // Main inspection scenario webhook (Route 1 — force_report=true)
+    // V6: unified — clarify resubmission goes to main inspection webhook
+    // (Route 2 in main scenario picks it up via {{16.inspection_id}} exists filter)
+    MAKE_WEBHOOK_URL:         "https://hook.eu1.make.com/8j58i0pjxbyhr9dxqoz3fszi4rt5tq6k",
+    // Force-report goes to same webhook (Route 1, force_report=true filter)
     INSPECTION_WEBHOOK_URL:   "https://hook.eu1.make.com/8j58i0pjxbyhr9dxqoz3fszi4rt5tq6k",
     WAITING_PAGE_URL:         "https://www.housecomply.co.uk/inspection/waiting",
     ESCALATED_PAGE_URL:       "https://www.housecomply.co.uk/inspection/escalated",
@@ -399,6 +404,8 @@
 
   // =============================================================
   // SUBMIT (regular clarify resubmission — Route 2 in main scenario)
+  // V6: now posts to MAIN inspection webhook. Route 2 filter
+  // ({{16.inspection_id}} exists, no force_report) picks it up.
   // =============================================================
   async function handleSubmit() {
     const missingSlots=[];
