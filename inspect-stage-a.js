@@ -2,7 +2,7 @@
  * HouseComply — Stage A Inspect Form (office pre-fill)
  * ----------------------------------------------------------------------------
  * Mounts at: /inspect/stage-a (GHL-hosted shell loads this from jsDelivr)
- * Webhook target: window.HC_CONFIG.WEBHOOK_A_URL (Webhook A, async, no-cors)
+ * Webhook target: window.HC_CONFIG.WEBHOOK_A_URL (Webhook A, CORS, application/json)
  * Data contract: 02_DATA_STRUCTURE_webhook_A_stageA.md (authoritative)
  * Spec contract: Phase1_Stage_A_Form_Spec_v1.1
  * Architecture: System Architecture v3.0 + Amendments A-01..A-20
@@ -10,7 +10,8 @@
  * REQUIREMENTS THAT BLOCK CHANGES TO THIS FILE:
  *  - Field names in payload must match the Data Structure exactly. If you
  *    rename any payload key, update the Data Structure in Make first.
- *  - Submit fetch MUST be no-cors + text/plain. Do not change to application/json.
+ *  - Submit fetch uses CORS + application/json. Make auto-parses the body
+ *    against the Data Structure, exposing {{1._meta.*}} etc. downstream.
  *  - Lowercase "yes" / "no" / "unknown" for all yes/no/unknown fields.
  *  - The 6 property single-select dropdowns must use the exact Airtable enum
  *    values (PROPERTY_TYPE_VALUES etc. below).
@@ -1095,11 +1096,11 @@
 
     var payload = buildPayload();
 
-    // No-cors text/plain — opaque response, can't read status.
+    // CORS + application/json — Make auto-parses body against Data Structure.
+    // Response is readable; we still redirect regardless (fire-and-redirect pattern).
     fetch(window.HC_CONFIG.WEBHOOK_A_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     }).then(function () {
       // Success path — proceed regardless of opaque status.
