@@ -1147,16 +1147,16 @@
       gasObj = {
         at_property: "no",
         available: "no",
-        issue_date: "",
-        expiry_date: "",
+        issue_date: null,
+        expiry_date: null,
         status: "Not applicable"
       };
     } else {
       gasObj = {
         at_property: gasAtProp || "",
         available: val("gas_available") || "",
-        issue_date: val("gas_issue_date") || "",
-        expiry_date: val("gas_expiry_date") || "",
+        issue_date: dateOrNull("gas_issue_date"),
+        expiry_date: dateOrNull("gas_expiry_date"),
         status: val("gas_status") || ""
       };
     }
@@ -1189,11 +1189,11 @@
       tenancy: {
         is_new: isNewTenancy,
         occupation_contract_type: val("occupation_contract_type"),
-        contract_start_date: val("contract_start_date"),
-        occupation_start_date: val("occupation_start_date"),
-        contract_end_date: val("contract_end_date") || "",
+        contract_start_date: dateOrNull("contract_start_date"),
+        occupation_start_date: dateOrNull("occupation_start_date"),
+        contract_end_date: dateOrNull("contract_end_date"),
         written_statement_prepared: val("written_statement_prepared"),
-        written_statement_served_date: val("written_statement_served_date") || "",
+        written_statement_served_date: dateOrNull("written_statement_served_date"),
         inventory_signed: val("inventory_signed"),
         num_tenants: numOrZero("num_tenants"),
         tenant_names: val("tenant_names")
@@ -1202,37 +1202,37 @@
         epc: {
           available: val("epc_available"),
           rating: val("epc_rating"),
-          date: val("epc_date") || "",
+          date: dateOrNull("epc_date"),
           certificate_url: "",  // Always empty in v3.0 per A-07
           exemption_type: val("epc_exemption_type") || ""
         },
         eicr: {
           available: val("eicr_available"),
-          issue_date: val("eicr_issue_date") || "",
-          expiry_date: val("eicr_expiry_date") || "",
+          issue_date: dateOrNull("eicr_issue_date"),
+          expiry_date: dateOrNull("eicr_expiry_date"),
           result: val("eicr_result") || "",
           status: val("eicr_status") || ""
         },
         eic: {
           available: val("eic_available"),
-          issue_date: val("eic_issue_date") || ""
+          issue_date: dateOrNull("eic_issue_date")
         },
         gas: gasObj,
         fra: {
           applicable: val("fra_applicable"),
-          date: val("fra_date") || ""
+          date: dateOrNull("fra_date")
         },
         asbestos: {
           survey_held: val("asbestos_survey_held"),
-          date: val("asbestos_date") || ""
+          date: dateOrNull("asbestos_date")
         },
         radon: {
           checked: val("radon_checked"),
-          date: val("radon_date") || ""
+          date: dateOrNull("radon_date")
         },
         legionella: {
           risk_assessment_held: val("legionella_held"),
-          date: val("legionella_date") || ""
+          date: dateOrNull("legionella_date")
         }
       },
       financial: {
@@ -1281,6 +1281,17 @@
   function numOrZero(name) {
     var n = parseFloat(val(name));
     return isNaN(n) ? 0 : n;
+  }
+
+  /**
+   * Returns a date string if populated, or null if empty.
+   * Make Data Structure date-typed fields reject "" (empty string) — they
+   * need either a valid ISO date or null/absent. This prevents the silent-
+   * drop bug where the webhook returns 200 but queues nothing.
+   */
+  function dateOrNull(name) {
+    var v = val(name);
+    return v ? v : null;
   }
 
   function show(id, condition) {
