@@ -29,6 +29,7 @@
   var COUNTRY_DEFAULT = "Wales";
 
   var INSPECTION_TYPES = [
+    "Full compliance inspection",
     "Start of tenancy",
     "Mid-tenancy",
     "End of tenancy",
