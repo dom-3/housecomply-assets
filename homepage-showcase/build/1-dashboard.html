@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="app.css">
+<style>
+  body{width:1560px;padding:60px}
+  .stage{width:1440px;margin:0 auto}
+  .browser{width:1440px;height:900px;display:flex;flex-direction:column}
+  .app{flex:1}
+</style></head>
+<body>
+<div class="stage">
+  <div class="browser">
+    <div class="chrome"><div class="dots"><span class="dot a"></span><span class="dot b"></span><span class="dot c"></span></div>
+      <div class="addr"><span class="lock"></span>app.housecomply.co.uk/portfolio</div><div style="width:52px"></div></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="wordmark"><span class="hc serif">HC</span>HouseComply</div>
+        <div class="nav"><a class="on">Portfolio</a><a>Landlords</a><a>Team</a><a>Reports</a><a>Settings</a></div>
+        <div class="avatar">DR</div>
+      </div>
+      <div class="body">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Portfolio health</div>
+            <h1 class="page serif" style="margin-top:8px">Your whole portfolio, <span class="nv">at a glance<span>.</span></span></h1>
+            <div class="sub">84 properties across 3 branches &middot; last synced 2 minutes ago</div>
+          </div>
+          <button class="btn">Export record pack</button>
+        </div>
+        <div class="tiles">
+          <div class="tile total"><div class="n tnum">84</div><div class="lab">Total properties</div><div class="meta">across 3 branches</div></div>
+          <div class="tile attn"><div class="n tnum">6</div><div class="lab">Needs attention</div><div class="meta">overdue or not provided</div></div>
+          <div class="tile exp"><div class="n tnum">11</div><div class="lab">Expiring soon</div><div class="meta">within the next 60 days</div></div>
+          <div class="tile cur"><div class="n tnum">67</div><div class="lab">Current</div><div class="meta">in date and evidenced</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><div class="t serif">Needs attention first</div><div class="eyebrow">Sorted by soonest due</div></div>
+          <table>
+            <thead><tr><th>Property</th><th>Landlord</th><th>Record</th><th>Status</th><th>Due</th></tr></thead>
+            <tbody>
+              <tr><td><div class="addr2">16 Heol y Felin</div><div class="mut">SA31 3BX &middot; Carmarthen</div></td><td>Pennant Lettings</td><td>Gas safety</td><td><span class="chip attn">Needs attention</span></td><td class="tnum">Overdue 4 days</td></tr>
+              <tr><td><div class="addr2">4 Maes Tegid</div><div class="mut">LL23 7AB &middot; Bala</div></td><td>Glanmor Property</td><td>EICR</td><td><span class="chip attn">Needs attention</span></td><td class="tnum">Overdue 1 day</td></tr>
+              <tr><td><div class="addr2">22 Pennant Road</div><div class="mut">CF31 2HJ &middot; Bridgend</div></td><td>T. Morgan</td><td>EPC</td><td><span class="chip miss">Not provided</span></td><td class="tnum">—</td></tr>
+              <tr><td><div class="addr2">7 Glanmor Terrace</div><div class="mut">SA15 1LR &middot; Llanelli</div></td><td>Cwmbran Residential</td><td>Gas safety</td><td><span class="chip exp">Expiring soon</span></td><td class="tnum">in 9 days</td></tr>
+              <tr><td><div class="addr2">31 Hill Street</div><div class="mut">SA18 3AA &middot; Ammanford</div></td><td>R. Hughes</td><td>Smoke &amp; CO</td><td><span class="chip exp">Expiring soon</span></td><td class="tnum">in 23 days</td></tr>
+              <tr><td><div class="addr2">9 Priory Street</div><div class="mut">SA31 1LN &middot; Carmarthen</div></td><td>Pennant Lettings</td><td>Legionella</td><td><span class="chip cur">Current</span></td><td class="tnum">in 174 days</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
