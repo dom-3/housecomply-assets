@@ -1,0 +1,60 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="app.css">
+<style>
+  body{width:1560px;padding:60px}
+  .stage{width:1440px;margin:0 auto}
+  .browser{width:1440px;height:900px;display:flex;flex-direction:column}
+  .app{flex:1;position:relative}
+</style></head>
+<body>
+<div class="stage">
+  <div class="browser">
+    <div class="chrome"><div class="dots"><span class="dot a"></span><span class="dot b"></span><span class="dot c"></span></div>
+      <div class="addr"><span class="lock"></span>app.housecomply.co.uk/landlords</div><div style="width:52px"></div></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="wordmark"><span class="hc serif">HC</span>HouseComply</div>
+        <div class="nav"><a>Portfolio</a><a class="on">Landlords</a><a>Team</a><a>Reports</a><a>Settings</a></div>
+        <div class="avatar">DR</div>
+      </div>
+      <div class="body">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Landlords</div>
+            <h1 class="page serif" style="margin-top:8px">Every landlord, linked to <span class="nv">Rent Smart Wales<span>.</span></span></h1>
+            <div class="sub">18 landlords &middot; registrations matched and kept in view</div>
+          </div>
+          <button class="btn">Add landlord</button>
+        </div>
+        <div class="panel" style="max-width:1020px">
+          <div class="panel-h"><div class="t serif">Your landlords</div><div class="eyebrow">Rent Smart Wales status</div></div>
+          <table>
+            <thead><tr><th>Landlord</th><th>Properties</th><th>Rent Smart Wales reg.</th><th>Registration</th><th>Portal</th></tr></thead>
+            <tbody>
+              <tr><td><div class="addr2">Pennant Lettings</div><div class="mut">Agent &middot; Carmarthen</div></td><td class="tnum">31</td><td><span class="rsw"><span class="no">LR-0041-2287</span></span></td><td><span class="rsw"><span class="tick">&check;</span>Linked</span></td><td><span class="chip cur">Invited</span></td></tr>
+              <tr><td><div class="addr2">Glanmor Property</div><div class="mut">Landlord &middot; Bala</div></td><td class="tnum">12</td><td><span class="no tnum">LR-0199-4413</span></td><td><span class="rsw"><span class="tick">&check;</span>Linked</span></td><td><span class="chip cur">Invited</span></td></tr>
+              <tr><td><div class="addr2">T. Morgan</div><div class="mut">Landlord &middot; Bridgend</div></td><td class="tnum">7</td><td><span class="no tnum">LR-0288-1902</span></td><td><span class="rsw"><span class="tick">&check;</span>Linked</span></td><td><span class="chip miss">Not invited</span></td></tr>
+              <tr><td><div class="addr2">Cwmbran Residential</div><div class="mut">Landlord &middot; Llanelli</div></td><td class="tnum">9</td><td><span class="mut">Awaiting number</span></td><td><span class="chip exp">Link pending</span></td><td><span class="chip miss">Not invited</span></td></tr>
+              <tr><td><div class="addr2">R. Hughes</div><div class="mut">Landlord &middot; Ammanford</div></td><td class="tnum">4</td><td><span class="no tnum">LR-0312-7740</span></td><td><span class="rsw"><span class="tick">&check;</span>Linked</span></td><td><span class="chip cur">Invited</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- read-only landlord portal inset -->
+      <div class="inset">
+        <div class="ih"><div style="font-family:var(--serif);font-size:14px;font-weight:500;color:var(--ink)">Landlord portal</div><span class="ro-pill">Read only</span></div>
+        <div style="padding:13px 15px">
+          <div class="eyebrow" style="margin-bottom:9px">Glanmor Property &middot; 12 properties</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--rule-soft);font-size:12px">
+            <span class="serif" style="color:var(--ink)">4 Maes Tegid</span><span class="chip attn">Needs attention</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--rule-soft);font-size:12px">
+            <span class="serif" style="color:var(--ink)">8 Stryd Fawr</span><span class="chip exp">Expiring soon</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:12px">
+            <span class="serif" style="color:var(--ink)">2 Tegid Terrace</span><span class="chip cur">Current</span></div>
+          <div style="margin-top:11px;font-size:10.5px;color:var(--ink-faint);font-style:italic">View only &middot; cannot edit or upload</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

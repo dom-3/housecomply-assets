@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="app.css">
+<style>
+  body{width:1200px;padding:64px}
+  .stage{display:flex;align-items:center;justify-content:center;gap:56px}
+</style></head>
+<body>
+<div class="stage">
+  <!-- TABLET, landscape -->
+  <div class="tablet">
+    <div class="screen" style="height:396px;display:flex">
+      <!-- left rail -->
+      <div style="width:200px;border-right:1px solid var(--rule-soft);padding:16px 15px">
+        <div class="wordmark" style="font-size:15px;margin-bottom:16px"><span class="hc serif" style="width:21px;height:21px;font-size:9px;vertical-align:-4px">HC</span>HouseComply</div>
+        <div class="eyebrow" style="margin-bottom:10px">Inspection &middot; 16 Heol y Felin</div>
+        <div style="font-size:11.5px;color:var(--ink-soft);line-height:2.1">
+          <div style="color:var(--pass)">&check; Smoke &amp; CO alarms</div>
+          <div style="color:var(--pass)">&check; Electrics (EICR)</div>
+          <div style="color:var(--ink);font-weight:600;border-left:2px solid var(--accent);padding-left:8px;margin-left:-10px">Heating &amp; gas</div>
+          <div>Damp &amp; mould</div>
+          <div>Fire doors</div>
+          <div>Means of escape</div>
+        </div>
+      </div>
+      <!-- right content -->
+      <div style="flex:1;padding:18px 20px">
+        <div class="wz" style="padding:0">
+          <div class="step">Step 3 of 12 &middot; Heating &amp; gas</div>
+          <div class="prog" style="margin:10px 0 16px"><span style="width:25%"></span></div>
+          <div class="q">Is there a current Gas Safety Record for the property?</div>
+          <div class="opt sel"><span class="rad"></span>Yes, record on file and in date</div>
+          <div class="opt"><span class="rad"></span>Record on file, expiring soon</div>
+          <div class="opt"><span class="rad"></span>No record / overdue</div>
+          <div style="display:flex;gap:12px;align-items:flex-end;margin-top:12px">
+            <div class="thumb"><span class="cap">Boiler &middot; just now</span></div>
+            <div class="photo" style="flex:1;margin-top:0;height:86px"><span>+ Add another photo</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE, portrait -->
+  <div class="phone">
+    <div class="screen" style="height:600px;display:flex;flex-direction:column">
+      <div class="notch"></div>
+      <div class="statusbar" style="padding-top:12px"><span class="tnum">9:41</span><span class="eyebrow" style="font-size:9px">On site</span></div>
+      <div class="wz" style="flex:1">
+        <div class="top"><div class="eyebrow">Inspection</div><div class="step">Step 4 of 12</div></div>
+        <div class="prop serif">16 Heol y Felin</div>
+        <div class="step" style="margin-top:2px">SA31 3BX &middot; Carmarthen</div>
+        <div class="prog"><span style="width:33%"></span></div>
+        <div class="q">Smoke alarm — ground floor hallway</div>
+        <div class="opt sel"><span class="rad"></span>Present &amp; working</div>
+        <div class="opt"><span class="rad"></span>Present, not working</div>
+        <div class="opt"><span class="rad"></span>Not present</div>
+        <div class="photo"><span>&#128247; Photo added &middot; 1</span></div>
+        <button class="next">Save &amp; next</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
