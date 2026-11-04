@@ -1,6 +1,6 @@
 /* HouseComply showcase — tokens from live site :root (housecomply-marketing/index.html).
-   Type: FINAL uses 'Newsreader' (serif) + 'Hanken Grotesk' (sans).
-   This v1 comp substitutes Lora/Inter because the CDN is blocked in the render sandbox. */
+   Type: 'Newsreader' (serif) + 'Hanken Grotesk' (sans), the real brand fonts.
+   Rendered with the fonts installed locally from the google/fonts repo (CDN blocked in sandbox). */
 :root{
   --parchment:#f3ecdb; --paper:#faf5e7; --paper2:#fbf7ec; --paper3:#f1e9d4;
   --ink:#1b1815; --ink-soft:#4a463e; --ink-faint:#847d6f;
@@ -9,8 +9,8 @@
   --pass:#4f6435; --fail:#6e1c28; --advisory:#9c7515; --missing:#6b6660;
   --pass-wash:#ecefdf; --fail-wash:#f1e3e1; --advisory-wash:#f3ead3; --missing-wash:#ebe7df;
   --radius:4px; --radius-sm:2px;
-  --serif:'Newsreader','Lora',Georgia,serif;
-  --sans:'Hanken Grotesk','Inter',system-ui,sans-serif;
+  --serif:'Newsreader',Georgia,serif;
+  --sans:'Hanken Grotesk',system-ui,sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--sans);background:var(--parchment);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
